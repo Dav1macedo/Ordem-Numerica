@@ -1,0 +1,151 @@
+!gcc sorting_analysis.c -o sorting_analysis.exe
+!./sorting_analysis.exe
+from google.colab import files
+uploaded = files.upload()
+!ls
+# Escreve o código C no arquivo sorting_analysis.c
+%%writefile sorting_analysis.c
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#define SIZE 1000
+void swap(int *a, int *b) {
+int temp = *a;
+*a = *b;
+*b = temp;
+}
+void bubblesort(int arr[], int n) {
+int i, j;
+for (i = 0; i < n - 1; i++) {
+for (j = 0; j < n - 1; j++) {
+if (arr[j] > arr[j + 1]) {
+swap(&arr[j], &arr[j + 1]);
+}
+}
+}
+}
+int partition(int arr[], int low, int high) {
+int pivot = arr[high];
+int i = (low - 1);
+for (int j = low; j <= high - 1; j++) {
+if (arr[j] < pivot) {
+i++;
+swap(&arr[i], &arr[j]);
+}
+}
+swap(&arr[i + 1], &arr[high]);
+return (i + 1);
+}
+void quicksort(int arr[], int low, int high) {
+if (low < high) {
+int pi = partition(arr, low, high);
+quicksort(arr, low, pi - 1);
+quicksort(arr, pi + 1, high);
+}
+}
+void merge(int arr[], int l, int m, int r) {
+int i, j, k;
+int n1 = m - l + 1;
+int n2 = r - m;
+int L[n1], R[n2];
+for (i = 0; i < n1; i++) {
+L[i] = arr[l + i];
+}
+for (j = 0; j < n2; j++) {
+R[j] = arr[m + 1 + j];
+}
+i = 0;
+j = 0;
+k = l;
+while (i < n1 && j < n2) {
+if (L[i] <= R[j]) {
+arr[k] = L[i];
+i++;
+} else {
+arr[k] = R[j];
+j++;
+}
+k++;
+}
+while (i < n1) {
+arr[k] = L[i];
+i++;
+k++;
+}
+while (j < n2) {
+arr[k] = R[j];
+j++;
+k++;
+}
+}
+void mergesort(int arr[], int l, int r) {
+if (l < r) {
+int m = l + (r - l) / 2;
+mergesort(arr, l, m);
+mergesort(arr, m + 1, r);
+merge(arr, l, m, r);
+}
+}
+int readArrayFromFile(const char* filename, int arr[], int n) {
+FILE* file = fopen(filename, "r");
+if (file == NULL) {
+printf("Erro ao abrir o arquivo\n");
+return 0;
+}
+for (int i = 0; i < n; i++) {
+if (fscanf(file, "%d", &arr[i]) != 1) {
+printf("Erro ao ler o arquivo\n");
+fclose(file);
+return 0;
+}
+}
+fclose(file);
+return 1;
+}
+void copyArray(int source[], int destination[], int n) {
+for (int i = 0; i < n; i++) {
+destination[i] = source[i];
+}
+}
+void printArray(int arr[], int n) {
+for (int i = 0; i < n; i++) {
+printf("%d ", arr[i]);
+}
+printf("\n");
+}
+int main() {
+int arr[SIZE], arrCopy[SIZE];
+clock_t start, end;
+double time_taken;
+if (!readArrayFromFile("1Kaleatorio.txt", arr, SIZE)) {
+fprintf(stderr, "Erro ao carregar os números do arquivo\n");
+return 1;
+}
+printf("Array Inicial:\n");
+printArray(arr, SIZE);
+copyArray(arr, arrCopy, SIZE);
+start = clock();
+bubblesort(arrCopy, SIZE);
+end = clock();
+time_taken = ((double)(end - start));
+printf("\nBubble Sort: %f seconds\n", time_taken);
+printf("Array Sorteado com Bubble Sort;\n");
+printArray(arrCopy, SIZE);
+copyArray(arr, arrCopy, SIZE);
+start = clock();
+quicksort(arrCopy, 0, SIZE - 1);
+end = clock();
+time_taken = ((double)(end - start));
+printf("\nQuick Sort: %f seconds\n", time_taken);
+printf("Array Sorteado com Quick Sort;\n");
+printArray(arrCopy, SIZE);
+copyArray(arr, arrCopy, SIZE);
+start = clock();
+mergesort(arrCopy, 0, SIZE - 1);
+end = clock();
+time_taken = ((double)(end - start));
+printf("\nMerge Sort: %f seconds\n", time_taken);
+printf("Array Sorteado com Merge Sort;\n");
+printArray(arrCopy, SIZE);
+return 0;
+}
